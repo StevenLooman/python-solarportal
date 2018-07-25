@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Solarportal monitoring script."""
+
+import argparse
+import asyncio
+import logging
+import os.path
+import sys
+from datetime import datetime
+from datetime import timedelta
+
+import solarportal
+
+
+logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s:%(message)s',level=logging.DEBUG)
+logging.getLogger('chardet.charsetprober').setLevel(logging.ERROR)
+_LOGGER = logging.getLogger('solarportal-to-csv')
+
+
+portals = ', '.join(solarportal.PORTALS.keys())
+parser = argparse.ArgumentParser(description='upnp_client')
+parser.add_argument('--portal-type', required=True, help='Portal to use: ' + portals)
+parser.add_argument('--portal-username', required=True, help='Username for portal')
+parser.add_argument('--portal-password', required=True, help='Password for portal')
+parser.add_argument('--output', required=True, help='Output CSV file, use - for stdout')
+parser.add_argument('--interval', default=5, help='Interval bewteen fetches, in minutes, defaults to 5', type=int)
+args = parser.parse_args()
+
+
+def ceil_datetime(dt, delta):
+    return dt + (datetime.min - dt) % delta
+
+
+def write_results(filename: str, timestamp: datetime, powerstation: solarportal.Powerstation, data: solarportal.Data):
+    d = {
+        'timestamp': int(timestamp.timestamp()),
+        'station': powerstation.station_id,
+        'actual_power': data.actual_power,
+        'today_income': data.today_income,
+        'total_income': data.total_income,
+        'etoday': data.etoday,
+        'etotal': data.etotal,
+    }
+    line = '{timestamp};{actual_power};{today_income};{total_income};{etoday};{etotal}'.format(**d)
+
+    if filename == '-':
+        print(line)
+        return
+
+    write_header = not os.path.exists(filename)
+    with open(filename, 'ta') as fd:
+        if write_header:
+            fd.write('timestamp;ActualPower;TodayIncome;TotalIncome;etoday;etotal' + '\n')
+
+        fd.write(line + '\n')
+
+
+async def async_main():
+    interval = timedelta(minutes=args.interval)
+
+    portal_type = args.portal_type
+    portal = solarportal.SolarPortal(portal_type)
+
+    if args.output == '-':
+        print('timestamp;ActualPower;TodayIncome;TotalIncome;etoday;etotal')
+
+    # fetch token
+    token = await portal.async_login(username=args.portal_username, password=args.portal_password)
+    _LOGGER.debug('Using token: %s', token)
+
+    # fetch powerstation
+    powerstations = await portal.async_get_powerstations(token)
+    if not powerstations:
+        print('No powerstations found')
+        sys.exit(1)
+    powerstation = powerstations[0]
+    _LOGGER.debug('Using powerstation: %s', powerstation)
+
+    # enter loop
+    while True:
+        now = datetime.now()
+        next_ = ceil_datetime(now, interval)
+        diff = next_ - now
+        _LOGGER.debug('Sleeping for %s seconds', diff.seconds)
+        await asyncio.sleep(diff.seconds)
+
+        try:
+            data = await portal.async_get_data(token, powerstation)
+            write_results(args.output, next_, powerstation, data)
+            await asyncio.sleep(5)  # ensure we don't loop too soon
+        except solarportal.SolarPortalError as ex:
+            # get new token and try next time
+            token = await portal.async_login(username=args.portal_username, password=args.portal_password)
+            asyncio.sleep(5)
+        except aiohttp.ClientError as exc:
+            _LOGGER.debug('Caught exception: ', exc)
+
+
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+
+    try:
+        loop.run_until_complete(async_main())
+    except KeyboardInterrupt:
+        pass
