@@ -68,8 +68,16 @@ class Inverter:
         return float(self._data['etoday'])
 
     @property
+    def energy_today(self):
+        return self.etoday
+
+    @property
     def etotal(self):
         return int(self._data['etotal'])
+
+    @property
+    def energy_total(self):
+        return self.etotal
 
     @property
     def lastupdated(self):
@@ -152,8 +160,16 @@ class Data:
         return float(self._data['income']['etoday'])
 
     @property
+    def energy_today(self):
+        return self.etoday
+
+    @property
     def etotal(self):
         return int(self._data['income']['etotal'])
+
+    @property
+    def energy_total(self):
+        return self.energy_total
 
     @property
     def total_income(self):

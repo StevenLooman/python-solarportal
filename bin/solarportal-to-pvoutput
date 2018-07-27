@@ -40,7 +40,7 @@ async def write_results(timestamp: datetime, data: solarportal.Data):
     data = {
         'd': timestamp.strftime('%Y%m%d'),
         't': timestamp.strftime('%H:%M'),
-        'v1': data.today_income * 1000,
+        'v1': data.energy_today * 1000,
         'v2': data.actual_power,
     }
 

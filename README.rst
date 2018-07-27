@@ -19,8 +19,8 @@ Example usage::
     powerstations = await portal.async_get_powerstations(token)
     powerstation = powerstations[0]
     data = await portal.async_get_data(token, powerstation)
-    print('actual power: {} kWh'.format(data.actual_power))
-    print('todays energy: {} kWh'.format(data.today_income))
+    print('actual power: {} W'.format(data.actual_power))
+    print('todays energy: {} kWh'.format(data.energy_today))
 
 
 A tool to log values to a CSV has been included: ``solarportal-to-csv``
