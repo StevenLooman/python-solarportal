@@ -498,7 +498,7 @@ class SolarPortal:
             'token': token.token,
             'key': key,
             'stationid': powerstation_id,
-            'now': now.isoformat(),
+            'datetime': now.isoformat(),
             'type': type,
         }
         data = await self._request(params)
