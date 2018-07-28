@@ -469,7 +469,7 @@ class SolarPortal:
 
         return [Powerstation(s) for s in data['power']]
 
-    async def async_get_powerstation_count(self, token: Token, key='apitest'):
+    async def async_get_powerstation_count(self, token: Token, key='apitest') -> int:
         params = {
             'method': 'PowerstationslistCount',
             'username': token.username,
@@ -491,7 +491,7 @@ class SolarPortal:
         data = await self._request(params)
         return Data(data)
 
-    async def async_get_graph(self, token: Token, powerstation: Powerstation, now: datetime, type: str, key='apitest') -> Data:
+    async def async_get_graph(self, token: Token, powerstation: Powerstation, now: datetime, type: str, key='apitest') -> Graph:
         params = {
             'method': 'Graph',
             'username': token.username,
@@ -522,7 +522,7 @@ class SolarPortal:
 
         return [Error(e) for e in data['error']]
 
-    async def async_logout(self, token: Token, key='apitest'):
+    async def async_logout(self, token: Token, key='apitest') -> None:
         params = {
             'method': 'Logout',
             'username': token.username,
