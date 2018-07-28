@@ -491,26 +491,26 @@ class SolarPortal:
         data = await self._request(params)
         return Data(data)
 
-    async def async_get_graph(self, token: Token, powerstation_id: str, now: datetime, type: str, key='apitest') -> Data:
+    async def async_get_graph(self, token: Token, powerstation: Powerstation, now: datetime, type: str, key='apitest') -> Data:
         params = {
             'method': 'Graph',
             'username': token.username,
             'token': token.token,
             'key': key,
-            'stationid': powerstation_id,
+            'stationid': powerstation.station_id,
             'datetime': now.isoformat(),
             'type': type,
         }
         data = await self._request(params)
         return Graph(data)
 
-    async def async_get_errors(self, token: Token, powerstation_id: str, key='apitest') -> List[Error]:
+    async def async_get_errors(self, token: Token, powerstation: Powerstation, key='apitest') -> List[Error]:
         params = {
             'method': 'Error',
             'username': token.username,
             'token': token.token,
             'key': key,
-            'stationid': powerstation_id,
+            'stationid': powerstation.station_id,
             'page': '1',
             'perPage': '1000',
         }
