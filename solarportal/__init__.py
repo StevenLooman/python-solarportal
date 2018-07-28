@@ -375,7 +375,7 @@ def _xml_to_dict(el: ET.Element) -> Dict:
             value = el_child.text or ''
         if key not in result:
             result[key] = value
-        elif isinstance(key, list):
+        elif isinstance(result[key], list):
             result[key] = result[key] + [value]
         else:
             result[key] = [result[key]] + [value]
