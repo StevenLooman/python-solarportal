@@ -41,7 +41,7 @@ TEST_REQUIRES=[
 
 setup(
     name='python-solarportal',
-    version='0.0.1.dev0',
+    version='1.0.0',
     description='SolarPortal API',
     long_description=LONG_DESCRIPTION,
     url='https://github.com/StevenLooman/python-solarportal',
